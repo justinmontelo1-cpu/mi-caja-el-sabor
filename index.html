@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#991b1b">
+<meta name="description" content="Control de ventas, gastos y ganancias de El Sabor del Negrito.">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<title>Mi Caja | El Sabor del Negrito</title>
+<style>
+:root{--red:#991b1b;--dark:#171717;--paper:#fff;--muted:#737373;--line:#e5e5e5;--green:#166534}
+*{box-sizing:border-box}body{margin:0;background:#f4f4f5;color:#18181b;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,#171717,#3f0b0b);color:white;padding:22px 18px 18px;border-bottom:4px solid #b91c1c}
+.brand{font-size:12px;letter-spacing:1.5px;text-transform:uppercase;color:#fecaca;font-weight:800}
+h1{font-size:24px;margin:5px 0 3px}header p{margin:0;color:#e5e5e5;font-size:13px}
+main{max-width:760px;margin:auto;padding:14px 12px 90px}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:13px}
+.tab{border:1px solid #ddd;background:white;border-radius:12px;padding:10px 3px;font-size:12px;font-weight:750;color:#444}
+.tab.active{background:var(--red);color:white;border-color:var(--red)}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+.card,.panel{background:white;border:1px solid var(--line);border-radius:15px;padding:14px;box-shadow:0 2px 6px #00000008}
+.card span{display:block;color:var(--muted);font-size:12px}.card strong{display:block;font-size:21px;margin-top:5px;overflow-wrap:anywhere}
+.card.wide{grid-column:1/-1}.green{color:var(--green)}.red{color:#b91c1c}
+h2{font-size:18px;margin:5px 0 12px}.section{margin-top:13px}
+label{font-size:13px;font-weight:700;display:block;margin:11px 0 5px}
+input,select,textarea{font:inherit;width:100%;padding:12px;border:1px solid #d4d4d8;border-radius:10px;background:#fff;color:#18181b}
+button{font:inherit;cursor:pointer}.primary{width:100%;border:0;border-radius:11px;padding:13px;background:var(--red);color:white;font-weight:800;margin-top:14px}
+.secondary{border:1px solid #d4d4d8;background:#fff;border-radius:9px;padding:8px 10px;font-weight:700}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hint{font-size:12px;color:#71717a;line-height:1.45}
+.list{display:flex;flex-direction:column;gap:8px}.item{background:white;border:1px solid var(--line);border-radius:12px;padding:12px;display:flex;justify-content:space-between;gap:12px;align-items:center}
+.item small{display:block;color:#71717a;margin-top:3px}.amount{font-weight:850;white-space:nowrap}.empty{padding:20px;text-align:center;color:#71717a;background:white;border:1px dashed #d4d4d8;border-radius:12px}
+.hidden{display:none!important}.pill{display:inline-block;background:#fef2f2;color:#991b1b;padding:4px 7px;border-radius:99px;font-size:11px;font-weight:800}
+footer{text-align:center;color:#71717a;font-size:11px;padding:15px}
+#installNotice{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:10px;border-radius:10px;font-size:12px;margin-bottom:12px}
+@media(min-width:600px){.cards{grid-template-columns:repeat(3,1fr)}.card.wide{grid-column:auto}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">El Sabor del Negrito</div>
+  <h1>Mi Caja</h1>
+  <p>Control sencillo de ventas, gastos y ganancias</p>
+</header>
+<main>
+<div id="installNotice">Tus registros se guardan en este teléfono. Haz una copia de seguridad desde <b>Más</b> periódicamente.</div>
+<nav class="tabs">
+<button class="tab active" data-tab="inicio">Inicio</button>
+<button class="tab" data-tab="venta">＋ Venta</button>
+<button class="tab" data-tab="gasto">− Gasto</button>
+<button class="tab" data-tab="mas">Más</button>
+</nav>
+
+<section id="inicio">
+  <div class="row section">
+    <div><label for="periodo">Resumen</label><select id="periodo"><option value="hoy">Hoy</option><option value="7">Últimos 7 días</option><option value="30">Últimos 30 días</option><option value="todo">Todo el historial</option></select></div>
+    <div><label for="fechaFiltro">Fecha exacta (opcional)</label><input id="fechaFiltro" type="date"></div>
+  </div>
+  <div class="cards section">
+    <div class="card"><span>Ventas</span><strong id="totalVentas">RD$0.00</strong></div>
+    <div class="card"><span>Gastos</span><strong id="totalGastos">RD$0.00</strong></div>
+    <div class="card wide"><span>Resultado (ventas − gastos)</span><strong id="resultado">RD$0.00</strong></div>
+    <div class="card"><span>Ventas registradas</span><strong id="cantVentas">0</strong></div>
+    <div class="card"><span>Gastos registrados</span><strong id="cantGastos">0</strong></div>
+  </div>
+  <div class="panel section"><h2>Movimientos recientes</h2><div id="recientes" class="list"></div></div>
+  <p class="hint">Nota: el resultado es ventas menos gastos registrados. Para conocer la ganancia real, registra también compras de ingredientes, empaques, gas, delivery, renta y otros costos.</p>
+</section>
+
+<section id="venta" class="hidden">
+<div class="panel"><h2>Registrar una venta</h2>
+<form id="formVenta">
+<label for="producto">Producto / detalle</label><input id="producto" required maxlength="80" placeholder="Ej. Yaroa de pollo">
+<div class="row"><div><label for="precio">Precio (RD$)</label><input id="precio" type="number" min="0.01" step="0.01" required placeholder="250"></div><div><label for="cantidad">Cantidad</label><input id="cantidad" type="number" min="1" step="1" value="1" required></div></div>
+<div class="row"><div><label for="pagoVenta">Forma de pago</label><select id="pagoVenta"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select></div><div><label for="fechaVenta">Fecha</label><input id="fechaVenta" type="date" required></div></div>
+<label for="notaVenta">Nota (opcional)</label><input id="notaVenta" maxlength="120" placeholder="Ej. pedido para llevar">
+<button class="primary" type="submit">Guardar venta</button>
+</form></div>
+</section>
+
+<section id="gasto" class="hidden">
+<div class="panel"><h2>Registrar un gasto</h2>
+<form id="formGasto">
+<label for="detalleGasto">¿En qué gastaste?</label><input id="detalleGasto" required maxlength="80" placeholder="Ej. compra de pollo">
+<div class="row"><div><label for="montoGasto">Monto (RD$)</label><input id="montoGasto" type="number" min="0.01" step="0.01" required placeholder="1200"></div><div><label for="categoria">Categoría</label><select id="categoria"><option>Ingredientes</option><option>Empaques</option><option>Gas / electricidad</option><option>Delivery</option><option>Renta</option><option>Transporte</option><option>Personal</option><option>Retiro personal</option><option>Otro</option></select></div></div>
+<div class="row"><div><label for="fechaGasto">Fecha</label><input id="fechaGasto" type="date" required></div><div><label for="pagoGasto">Forma de pago</label><select id="pagoGasto"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option><option>Otro</option></select></div></div>
+<label for="notaGasto">Nota (opcional)</label><input id="notaGasto" maxlength="120" placeholder="Detalle adicional">
+<button class="primary" type="submit">Guardar gasto</button>
+</form></div>
+</section>
+
+<section id="mas" class="hidden">
+<div class="panel"><h2>Historial y respaldo</h2><p class="hint">Puedes revisar todos los movimientos, exportarlos a un archivo CSV o guardar una copia de seguridad. Los datos se quedan en este navegador y en este teléfono.</p>
+<div class="row"><button class="secondary" id="exportCsv">Exportar CSV</button><button class="secondary" id="backup">Copia JSON</button></div>
+<label for="restoreFile">Restaurar copia JSON</label><input id="restoreFile" type="file" accept=".json,application/json">
+<div class="section"><h2>Todos los movimientos</h2><div id="historial" class="list"></div></div>
+<div class="section"><button class="secondary" id="borrarTodo">Borrar todos los registros</button><p class="hint">Esta acción no se puede deshacer. Exporta una copia antes.</p></div>
+</div>
+</section>
+<footer>Mi Caja · El Sabor del Negrito · RD$</footer>
+</main>
+<script>
+const KEY='elsabor_micaja_v1';
+const $=id=>document.getElementById(id);
+let data=[];
+try{data=JSON.parse(localStorage.getItem(KEY)||'[]');if(!Array.isArray(data))data=[]}catch(e){data=[]}
+const today=()=>{const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`};
+$('fechaVenta').value=today();$('fechaGasto').value=today();
+const money=n=>'RD$'+Number(n||0).toLocaleString('es-DO',{minimumFractionDigits:2,maximumFractionDigits:2});
+const save=()=>{localStorage.setItem(KEY,JSON.stringify(data));render()};
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function setTab(tab){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));['inicio','venta','gasto','mas'].forEach(id=>$(id).classList.toggle('hidden',id!==tab));if(tab==='inicio'||tab==='mas')render()}
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
+$('formVenta').addEventListener('submit',e=>{e.preventDefault();const precio=Number($('precio').value),cantidad=Number($('cantidad').value);if(!(precio>0&&cantidad>0))return;data.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),tipo:'venta',detalle:$('producto').value.trim(),monto:Math.round(precio*cantidad*100)/100,cantidad,precio,pago:$('pagoVenta').value,fecha:$('fechaVenta').value,nota:$('notaVenta').value.trim(),creado:new Date().toISOString()});save();e.target.reset();$('cantidad').value=1;$('fechaVenta').value=today();setTab('inicio');alert('¡Venta guardada!')});
+$('formGasto').addEventListener('submit',e=>{e.preventDefault();const monto=Number($('montoGasto').value);if(!(monto>0))return;data.push({id:crypto.randomUUID?crypto.randomUUID():String(Date.now()),tipo:'gasto',detalle:$('detalleGasto').value.trim(),monto,categoria:$('categoria').value,pago:$('pagoGasto').value,fecha:$('fechaGasto').value,nota:$('notaGasto').value.trim(),creado:new Date().toISOString()});save();e.target.reset();$('fechaGasto').value=today();setTab('inicio');alert('¡Gasto guardado!')});
+function inRange(x){const exact=$('fechaFiltro').value;if(exact)return x.fecha===exact;const p=$('periodo').value;if(p==='todo')return true;const d=new Date();d.setHours(0,0,0,0);const dt=new Date((x.fecha||today())+'T00:00:00');if(p==='hoy')return x.fecha===today();const days=Number(p);const from=new Date(d);from.setDate(from.getDate()-(days-1));return dt>=from&&dt<=d}
+function itemHtml(x,del=false){return `<div class="item"><div><b>${esc(x.detalle)}</b><small>${x.fecha||''} · ${x.tipo==='venta'?'Venta · '+esc(x.pago||''): 'Gasto · '+esc(x.categoria||'')}${x.nota?' · '+esc(x.nota):''}</small></div><div style="text-align:right"><div class="amount ${x.tipo==='venta'?'green':'red'}">${x.tipo==='venta'?'+':'−'}${money(x.monto)}</div>${del?`<button class="secondary" data-del="${esc(x.id)}" style="margin-top:5px">Eliminar</button>`:''}</div></div>`}
+function render(){const filtered=data.filter(inRange),ventas=filtered.filter(x=>x.tipo==='venta'),gastos=filtered.filter(x=>x.tipo==='gasto'),tv=ventas.reduce((a,x)=>a+x.monto,0),tg=gastos.reduce((a,x)=>a+x.monto,0);$('totalVentas').textContent=money(tv);$('totalGastos').textContent=money(tg);$('resultado').textContent=money(tv-tg);$('resultado').className=tv-tg>=0?'green':'red';$('cantVentas').textContent=ventas.length;$('cantGastos').textContent=gastos.length;const sorted=[...filtered].sort((a,b)=>(b.creado||'').localeCompare(a.creado||''));$('recientes').innerHTML=sorted.slice(0,6).map(x=>itemHtml(x)).join('')||'<div class="empty">Todavía no hay movimientos en este período.</div>';const all=[...data].sort((a,b)=>(b.creado||'').localeCompare(a.creado||''));$('historial').innerHTML=all.map(x=>itemHtml(x,true)).join('')||'<div class="empty">No hay movimientos guardados.</div>';document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{if(confirm('¿Eliminar este movimiento?')){data=data.filter(x=>x.id!==b.dataset.del);save()}})}
+$('periodo').addEventListener('change',()=>{$('fechaFiltro').value='';render()});$('fechaFiltro').addEventListener('change',render);
+function download(name,content,type){const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+$('backup').onclick=()=>download('mi-caja-respaldo-'+today()+'.json',JSON.stringify({version:1,app:'Mi Caja El Sabor del Negrito',data},null,2),'application/json');
+$('exportCsv').onclick=()=>{const rows=[['tipo','fecha','detalle','monto_RD','cantidad','precio_unitario','categoria','pago','nota'],...data.map(x=>[x.tipo,x.fecha,x.detalle,x.monto,x.cantidad||'',x.precio||'',x.categoria||'',x.pago||'',x.nota||''])];const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\r\n');download('mi-caja-movimientos-'+today()+'.csv','\ufeff'+csv,'text/csv;charset=utf-8')};
+$('restoreFile').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;try{const parsed=JSON.parse(await f.text());const arr=Array.isArray(parsed)?parsed:parsed.data;if(!Array.isArray(arr))throw Error();if(confirm('¿Importar '+arr.length+' movimientos? Se combinarán con los actuales.')){const ids=new Set(data.map(x=>x.id));data.push(...arr.filter(x=>x&&x.id&&!ids.has(x.id)));save();alert('Copia importada.')}}catch(err){alert('Ese archivo no parece una copia válida de Mi Caja.')}e.target.value=''});
+$('borrarTodo').onclick=()=>{if(confirm('¿Seguro que quieres borrar TODOS los movimientos? Exporta una copia primero.')){if(confirm('Confirmación final: borrar todos los registros de este teléfono.')){data=[];save()}}};
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+render();
+</script>
+</body>
+</html>
